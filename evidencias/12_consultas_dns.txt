@@ -1,0 +1,52 @@
+﻿
+
+vagrant@cliente-1005968285:~$ resolvectl flush-caches; resolvectl query uao.edu.co; resolvectl query github.com; resolvectl query wikipedia.org
+uao.edu.co: 104.26.9.14                                     -- link: eth0
+            104.26.8.14                                     -- link: eth0
+            172.67.73.231                                   -- link: eth0
+            2606:4700:20::681a:90e                          -- link: eth0
+            2606:4700:20::ac43:49e7                         -- link: eth0
+            2606:4700:20::681a:80e                          -- link: eth0
+
+-- Information acquired via protocol DNS in 64.9ms.
+-- Data is authenticated: no; Data was acquired via local or encrypted transport: yes
+-- Data from: network
+github.com: 140.82.112.3                                    -- link: eth0
+
+-- Information acquired via protocol DNS in 20.1ms.
+-- Data is authenticated: no; Data was acquired via local or encrypted transport: yes
+-- Data from: network
+wikipedia.org: 208.80.154.224                               -- link: eth0
+               2620:0:861:ed1a::1                           -- link: eth0
+
+-- Information acquired via protocol DNS in 21.9ms.
+-- Data is authenticated: no; Data was acquired via local or encrypted transport: yes
+-- Data from: network
+
+vagrant@cliente-1005968285:~$ dig www.google.com | grep -E 'IN\s+A|SERVER|Query time'
+;www.google.com.			IN	A
+www.google.com.		106	IN	A	142.251.155.119
+www.google.com.		106	IN	A	142.251.157.119
+www.google.com.		106	IN	A	142.251.156.119
+www.google.com.		106	IN	A	142.251.154.119
+www.google.com.		106	IN	A	142.251.151.119
+www.google.com.		106	IN	A	142.251.153.119
+www.google.com.		106	IN	A	142.251.150.119
+www.google.com.		106	IN	A	142.251.152.119
+;; Query time: 20 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+
+vagrant@cliente-1005968285:~$ echo '### dig @8.8.8.8 va directo a UDP/53 del resolver, sin pasar por systemd-resolved:'; dig @8.8.8.8 www.google.com | grep -E 'SERVER|Query time'
+### dig @8.8.8.8 va directo a UDP/53 del resolver, sin pasar por systemd-resolved:
+;; Query time: 48 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8) (UDP)
+
+vagrant@cliente-1005968285:~$ resolvectl statistics | head -8
+DNSSEC supported by current servers: no
+
+Transactions          
+Current Transactions: 0
+  Total Transactions: 7
+                      
+Cache                 
+  Current Cache Size: 7

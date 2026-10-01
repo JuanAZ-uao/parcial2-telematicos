@@ -1,0 +1,106 @@
+﻿
+
+vagrant@srv2-1005968285:~$ sudo bash /vagrant/scripts/21_srv2_tls_on_off.sh off
+ssl_enable=NO
+
+vagrant@cliente-1005968285:~$ bash /vagrant/scripts/captura.sh eth1 09a_ftp_plano.pcap 'host 192.168.56.10 and (port 21 or portrange 50000-50010)' 'curl -sS --disable-epsv --user ftp_1005968285:Ftps.1005968285 -T 1005968285.txt ftp://192.168.56.10/ && curl -sS --disable-epsv --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/1005968285.txt'
+Archivo de prueba del parcial - Juan Esteban Panesso 1005968285
+Captura guardada: capturas/09a_ftp_plano.pcap (74 paquetes)
+
+vagrant@srv2-1005968285:~$ sudo bash /vagrant/scripts/21_srv2_tls_on_off.sh on
+ssl_enable=YES
+
+vagrant@cliente-1005968285:~$ bash /vagrant/scripts/captura.sh eth1 09b_ftps.pcap 'host 192.168.56.10 and (port 21 or portrange 50000-50010)' 'lftp -f /vagrant/scripts/lftp_ftps.lftp && cat descargado_lftp.txt'
+-rw-r--r--    1 1001     1001           64 Oct 01 15:53 1005968285.txt
+-rw-r--r--    1 1001     1001           50 Oct 01 15:50 bienvenida.txt
+Archivo de prueba del parcial - Juan Esteban Panesso 1005968285
+Captura guardada: capturas/09b_ftps.pcap (136 paquetes)
+
+vagrant@cliente-1005968285:~$ bash /vagrant/scripts/analizar_09_ftp.sh
+=================== 09a_ftp_plano.pcap (TLS deshabilitado) ===================
+--- Wireshark filtro: ftp   -> USER y PASS viajan en texto plano
+4|192.168.56.10|||220|(vsFTPd 3.0.5)
+6|192.168.56.20|USER|ftp_1005968285||
+8|192.168.56.10|||331|Please specify the password.
+9|192.168.56.20|PASS|Ftps.1005968285||
+11|192.168.56.10|||230|Login successful.
+12|192.168.56.20|PWD|||
+14|192.168.56.10|||257|"/" is the current directory
+15|192.168.56.20|PASV|||
+16|192.168.56.10|||227|Entering Passive Mode (192,168,56,10,195,81).
+20|192.168.56.20|TYPE|I||
+21|192.168.56.10|||200|Switching to Binary mode.
+22|192.168.56.20|STOR|1005968285.txt||
+23|192.168.56.10|||150|Ok to send data.
+29|192.168.56.10|||226|Transfer complete.
+31|192.168.56.20|QUIT|||
+32|192.168.56.10|||221|Goodbye.
+40|192.168.56.10|||220|(vsFTPd 3.0.5)
+42|192.168.56.20|USER|ftp_1005968285||
+44|192.168.56.10|||331|Please specify the password.
+45|192.168.56.20|PASS|Ftps.1005968285||
+47|192.168.56.10|||230|Login successful.
+48|192.168.56.20|PWD|||
+50|192.168.56.10|||257|"/" is the current directory
+51|192.168.56.20|PASV|||
+52|192.168.56.10|||227|Entering Passive Mode (192,168,56,10,195,81).
+56|192.168.56.20|TYPE|I||
+57|192.168.56.10|||200|Switching to Binary mode.
+58|192.168.56.20|SIZE|1005968285.txt||
+59|192.168.56.10|||213|64
+60|192.168.56.20|RETR|1005968285.txt||
+61|192.168.56.10|||150|Opening BINARY mode data connection for 1005968285.txt (64 bytes).
+67|192.168.56.10|||226|Transfer complete.
+69|192.168.56.20|QUIT|||
+70|192.168.56.10|||221|Goodbye.
+
+--- Wireshark: clic derecho > Seguir > Flujo TCP sobre el canal de datos (puerto 5000x)
+Node 0: 192.168.56.20:58958
+Node 1: 192.168.56.10:50001
+64
+Archivo de prueba del parcial - Juan Esteban Panesso 1005968285
+Node 0: 192.168.56.20:58964
+Node 1: 192.168.56.10:50001
+	64
+Archivo de prueba del parcial - Juan Esteban Panesso 1005968285
+
+--- Conversaciones TCP (1 control al 21 + 1 de datos por transferencia)
+                                                           | Frames  Bytes | | Frames  Bytes | | Frames  Bytes |      Start     |              |
+192.168.56.20:34138        <-> 192.168.56.10:21                16 1,375 bytes      14 1,042 bytes      30 2,417 bytes     0.091275000         0.0859
+192.168.56.20:34134        <-> 192.168.56.10:21                15 1,251 bytes      13 955 bytes      28 2,206 bytes     0.000000000         0.0816
+192.168.56.20:58958        <-> 192.168.56.10:50001              3 206 bytes       5 402 bytes       8 608 bytes     0.063724000         0.0117
+192.168.56.20:58964        <-> 192.168.56.10:50001              4 336 bytes       4 272 bytes       8 608 bytes     0.158169000         0.0136
+================================================================================
+
+=================== 09b_ftps.pcap (FTPS explicito) ===================
+--- Wireshark filtro: ftp   -> solo se ve en claro el saludo y AUTH TLS; despues todo es TLS
+4|||220|(vsFTPd 3.0.5)
+21|AUTH|TLS||
+22|||234|Proceed with negotiation.
+
+--- Wireshark filtro: tls.handshake.type==1 || tls.handshake.type==2 (Decode As TLS en 21 y 50000-50010)
+23|192.168.56.20|34154|21|Client Hello
+24|192.168.56.10|21|34154|Server Hello, Change Cipher Spec, Application Data, Application Data, Application Data, Application Data, Application Data
+51|192.168.56.20|33788|50010|Client Hello
+53|192.168.56.10|50010|33788|Server Hello, Change Cipher Spec, Application Data, Application Data
+79|192.168.56.20|35998|50004|Client Hello
+81|192.168.56.10|50004|35998|Server Hello, Change Cipher Spec, Application Data, Application Data
+108|192.168.56.20|37338|50005|Client Hello
+110|192.168.56.10|50005|37338|Server Hello, Change Cipher Spec, Application Data, Application Data
+
+--- Registros cifrados (tls.app_data) por puerto del servidor
+puerto 21: 41 paquetes con Application Data cifrado
+puerto 50004: 4 paquetes con Application Data cifrado
+puerto 50005: 6 paquetes con Application Data cifrado
+puerto 50010: 6 paquetes con Application Data cifrado
+
+--- Busqueda de la contrasena en claro en la captura FTPS: 0 coincidencias
+--- Busqueda del contenido del archivo en claro en la captura FTPS: 0 coincidencias
+
+--- Conversaciones TCP
+                                                           | Frames  Bytes | | Frames  Bytes | | Frames  Bytes |      Start     |              |
+192.168.56.20:34154        <-> 192.168.56.10:21                45 6,681 bytes      37 3,669 bytes      82 10 kB         0.000000000         0.3035
+192.168.56.20:37338        <-> 192.168.56.10:50005             10 1,327 bytes      10 1,450 bytes      20 2,777 bytes     0.236179000         0.0589
+192.168.56.20:33788        <-> 192.168.56.10:50010              9 1,341 bytes      10 1,450 bytes      19 2,791 bytes     0.136628000         0.0629
+192.168.56.20:35998        <-> 192.168.56.10:50004              6 977 bytes       9 1,434 bytes      15 2,411 bytes     0.206733000         0.0144
+================================================================================

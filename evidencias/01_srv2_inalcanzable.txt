@@ -1,0 +1,24 @@
+﻿
+vagrant@cliente-1005968285:~$ ip route
+default via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100 
+8.8.4.4 via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100 
+8.8.8.8 via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100 
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 metric 100 
+10.0.2.2 dev eth0 proto dhcp scope link src 10.0.2.15 metric 100 
+192.168.56.0/24 dev eth1 proto kernel scope link src 192.168.56.20 
+
+vagrant@cliente-1005968285:~$ ping -c3 -W2 192.168.50.2
+PING 192.168.50.2 (192.168.50.2) 56(84) bytes of data.
+
+--- 192.168.50.2 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2056ms
+
+
+vagrant@cliente-1005968285:~$ nc -zv -w3 192.168.50.2 21
+nc: connect to 192.168.50.2 port 21 (tcp) timed out: Operation now in progress
+
+vagrant@cliente-1005968285:~$ nc -zv -w3 192.168.50.2 22
+nc: connect to 192.168.50.2 port 22 (tcp) timed out: Operation now in progress
+
+vagrant@srv1-1005968285:~$ sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1

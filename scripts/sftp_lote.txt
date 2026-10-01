@@ -1,0 +1,6 @@
+pwd
+ls -l
+put 1005968285_sftp.txt
+ls -l
+get 1005968285_sftp.txt descargado_sftp.txt
+bye

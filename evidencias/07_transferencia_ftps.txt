@@ -1,0 +1,131 @@
+﻿
+vagrant@cliente-1005968285:~$ openssl x509 -in /vagrant/certs/servidor.crt -noout -subject -issuer -dates -fingerprint -sha256
+subject=C = CO, ST = Valle del Cauca, L = Cali, O = UAO, OU = Servicios Telematicos, CN = 192.168.56.10
+issuer=C = CO, ST = Valle del Cauca, L = Cali, O = UAO, OU = Servicios Telematicos, CN = CA Telematicos 1005968285
+notBefore=Oct  1 20:49:41 2026 GMT
+notAfter=Jan  3 20:49:41 2029 GMT
+sha256 Fingerprint=D8:C6:48:9B:A9:66:1A:8B:96:3D:83:0C:80:B4:5F:23:B8:AB:37:B2:0C:0A:8D:E9:9D:41:4E:B6:F1:33:46:9E
+
+vagrant@cliente-1005968285:~$ echo 'Archivo de prueba del parcial - Juan Esteban Panesso 1005968285' > 1005968285.txt; cat 1005968285.txt
+Archivo de prueba del parcial - Juan Esteban Panesso 1005968285
+
+vagrant@cliente-1005968285:~$ curl -sS --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/ ; echo '--- subir'; curl -sS --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 -T 1005968285.txt ftp://192.168.56.10/ && echo subida_ok; curl -sS --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/
+-rw-r--r--    1 1001     1001           50 Oct 01 15:50 bienvenida.txt
+--- subir
+subida_ok
+-rw-r--r--    1 1001     1001           64 Oct 01 15:51 1005968285.txt
+-rw-r--r--    1 1001     1001           50 Oct 01 15:50 bienvenida.txt
+
+vagrant@cliente-1005968285:~$ rm -f descargado.txt; curl -sS --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/1005968285.txt -o descargado.txt && cat descargado.txt && diff 1005968285.txt descargado.txt && echo 'IDENTICOS'
+Archivo de prueba del parcial - Juan Esteban Panesso 1005968285
+IDENTICOS
+
+vagrant@cliente-1005968285:~$ curl -v --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/ 2>&1 | grep -E 'AUTH|SSL connection|TLS|subject|issuer|expire|start date|PBSZ|PROT|PASV|EPSV|227|229|Connecting|USER|PASS|230'
+> AUTH SSL
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (OUT), TLS header, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Finished (20):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Request CERT (13):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Certificate (11):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+*  subject: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=192.168.56.10
+*  start date: Oct  1 20:49:41 2026 GMT
+*  expire date: Jan  3 20:49:41 2029 GMT
+*  subjectAltName: host "192.168.56.10" matched cert's IP address!
+*  issuer: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=CA Telematicos 1005968285
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> USER ftp_1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> PASS Ftps.1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+< 230 Login successful.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> PBSZ 0
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+< 200 PBSZ set to 0.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> PROT P
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+< 200 PROT now Private.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> EPSV
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+< 229 Entering Extended Passive Mode (|||50000|)
+* Connecting to 192.168.56.10 (192.168.56.10) port 50000
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* Doing the SSL/TLS handshake on the data stream
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (OUT), TLS header, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Finished (20):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+*  subject: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=192.168.56.10
+*  start date: Oct  1 20:49:41 2026 GMT
+*  expire date: Jan  3 20:49:41 2029 GMT
+*  subjectAltName: host "192.168.56.10" matched cert's IP address!
+*  issuer: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=CA Telematicos 1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS alert, close notify (256):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS alert, close notify (256):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+
+vagrant@srv2-1005968285:~$ sudo tail -n 12 /var/log/vsftpd.log
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "200 PROT now Private."
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP command: Client "192.168.56.20", "PWD"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "257 "/" is the current directory"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP command: Client "192.168.56.20", "EPSV"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "229 Entering Extended Passive Mode (|||50000|)"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP command: Client "192.168.56.20", "TYPE A"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "200 Switching to ASCII mode."
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP command: Client "192.168.56.20", "LIST"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "150 Here comes the directory listing."
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "226 Directory send OK."
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP command: Client "192.168.56.20", "QUIT"
+Thu Oct  1 15:51:45 2026 [pid 3041] [ftp_1005968285] FTP response: Client "192.168.56.20", "221 Goodbye."

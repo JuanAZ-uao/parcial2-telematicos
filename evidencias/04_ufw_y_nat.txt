@@ -1,0 +1,45 @@
+﻿
+vagrant@srv1-1005968285:~$ sudo ufw status verbose
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+192.168.50.2 21/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS control -> srv2
+
+
+vagrant@srv1-1005968285:~$ sudo iptables -t nat -L -n -v
+Chain PREROUTING (policy ACCEPT 8 packets, 436 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+    4   240 DNAT       tcp  --  eth1   *       0.0.0.0/0            0.0.0.0/0            tcp dpt:21 to:192.168.50.2:21
+    1    60 DNAT       tcp  --  eth1   *       0.0.0.0/0            0.0.0.0/0            tcp dpts:50000:50010 to:192.168.50.2
+
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain POSTROUTING (policy ACCEPT 3 packets, 244 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+vagrant@srv1-1005968285:~$ sudo iptables -L ufw-user-forward -n -v; sudo iptables -L ufw-user-input -n -v
+Chain ufw-user-forward (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    1    60 ACCEPT     tcp  --  eth1   eth2    0.0.0.0/0            192.168.50.2         multiport dports 50000:50010
+    1    60 ACCEPT     tcp  --  eth1   eth2    0.0.0.0/0            192.168.50.2         tcp dpt:21
+Chain ufw-user-input (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    6   264 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:22
+
+vagrant@srv1-1005968285:~$ sudo ss -ltn
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+LISTEN 0      128             [::]:22           [::]:*          

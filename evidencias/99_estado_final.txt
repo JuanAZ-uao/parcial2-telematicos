@@ -1,0 +1,46 @@
+﻿
+
+vagrant@srv1-1005968285:~$ sudo ufw status verbose
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+192.168.50.2 21/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS control -> srv2
+192.168.50.2 22/tcp on eth2 ALLOW FWD   Anywhere on eth1           # SFTP (2222 externo) -> srv2:22
+
+
+vagrant@srv1-1005968285:~$ sudo iptables -t nat -L PREROUTING -n -v --line-numbers
+Chain PREROUTING (policy ACCEPT 12 packets, 668 bytes)
+num   pkts bytes target     prot opt in     out     source               destination         
+1        0     0 DNAT       tcp  --  eth1   *       0.0.0.0/0            0.0.0.0/0            tcp dpt:21 to:192.168.50.2:21
+2        0     0 DNAT       tcp  --  eth1   *       0.0.0.0/0            0.0.0.0/0            tcp dpts:50000:50010 to:192.168.50.2
+3       17  1020 DNAT       tcp  --  eth1   *       0.0.0.0/0            0.0.0.0/0            tcp dpt:2222 to:192.168.50.2:22
+
+vagrant@srv1-1005968285:~$ sudo ss -ltnp
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                   
+LISTEN 0      128          0.0.0.0:22        0.0.0.0:*    users:(("sshd",pid=814,fd=3))            
+LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:(("systemd-resolve",pid=586,fd=14))
+LISTEN 0      128             [::]:22           [::]:*    users:(("sshd",pid=814,fd=4))            
+
+vagrant@cliente-1005968285:~$ bash /vagrant/scripts/99_cliente_escaneo.sh
+192.168.56.10:21     ABIERTO
+192.168.56.10:22     ABIERTO
+192.168.56.10:80     cerrado/filtrado
+192.168.56.10:443    cerrado/filtrado
+192.168.56.10:2222   ABIERTO
+192.168.56.10:3306   cerrado/filtrado
+192.168.56.10:8080   cerrado/filtrado
+192.168.56.10:50000  cerrado/filtrado
+192.168.56.10:50005  cerrado/filtrado
+192.168.56.10:50010  cerrado/filtrado
+192.168.56.10:50011  cerrado/filtrado
+
+192.168.50.2:21     inalcanzable (ok)
+192.168.50.2:22     inalcanzable (ok)

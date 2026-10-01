@@ -1,0 +1,10 @@
+# Estado local de Vagrant
+.vagrant/
+*.log
+
+# Guia personal de estudio (no se publica)
+GUIA_SUSTENTACION.md
+
+# Claves privadas: NUNCA se suben al repositorio
+certs/*.key
+certs/*.srl

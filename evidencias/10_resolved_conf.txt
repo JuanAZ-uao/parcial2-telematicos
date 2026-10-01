@@ -1,0 +1,26 @@
+﻿
+
+vagrant@cliente-1005968285:~$ sudo bash /vagrant/scripts/40_cliente_dot.sh yes 2>&1 | grep -vE 'WARNING|too open'
+lrwxrwxrwx 1 root root 37 Oct  1 15:55 /etc/resolv.conf -> /run/systemd/resolve/stub-resolv.conf
+nameserver 127.0.0.53
+options edns0 trust-ad
+search .
+DNS=1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google 9.9.9.9#dns.quad9.net
+FallbackDNS=1.0.0.1#cloudflare-dns.com 8.8.4.4#dns.google 149.112.112.112#dns.quad9.net
+Domains=~.
+DNSOverTLS=yes
+
+vagrant@cliente-1005968285:~$ grep -vE '^#|^$' /etc/systemd/resolved.conf; ls -l /etc/resolv.conf; cat /etc/resolv.conf | grep -v '^#'
+[Resolve]
+DNS=1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google 9.9.9.9#dns.quad9.net
+FallbackDNS=1.0.0.1#cloudflare-dns.com 8.8.4.4#dns.google 149.112.112.112#dns.quad9.net
+Domains=~.
+DNSOverTLS=yes
+DNSSEC=no
+Cache=yes
+DNSStubListener=yes
+lrwxrwxrwx 1 root root 37 Oct  1 15:55 /etc/resolv.conf -> /run/systemd/resolve/stub-resolv.conf
+
+nameserver 127.0.0.53
+options edns0 trust-ad
+search .

@@ -1,0 +1,32 @@
+﻿
+vagrant@srv1-1005968285:~$ sudo ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+[ 2] 192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+[ 3] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+
+vagrant@cliente-1005968285:~$ echo '### SIN regla route del puerto 21'; curl -sS --connect-timeout 5 --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/; echo rc=$?
+### SIN regla route del puerto 21
+curl: (28) Connection timeout after 5006 ms
+rc=28
+
+vagrant@srv1-1005968285:~$ sudo bash /vagrant/scripts/11_srv1_permitir_ftp.sh
+Rule added
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+[ 2] 192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+[ 3] 192.168.50.2 21/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS control -> srv2
+[ 4] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+
+vagrant@cliente-1005968285:~$ echo '### CON regla route del puerto 21'; curl -sS --connect-timeout 5 --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/; echo rc=$?
+### CON regla route del puerto 21
+-rw-r--r--    1 1001     1001           50 Oct 01 15:50 bienvenida.txt
+rc=0

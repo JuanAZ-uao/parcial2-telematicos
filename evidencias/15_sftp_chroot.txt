@@ -1,0 +1,53 @@
+﻿
+
+vagrant@srv2-1005968285:~$ sudo sshd -T -C user=sftp_1005968285,host=x,addr=192.168.56.20 | grep -Ei '^(chrootdirectory|forcecommand|passwordauthentication|allowtcpforwarding|x11forwarding|subsystem)'
+passwordauthentication yes
+x11forwarding no
+allowtcpforwarding no
+forcecommand internal-sftp -l INFO
+chrootdirectory /srv/sftp/%u
+subsystem sftp internal-sftp
+
+vagrant@srv2-1005968285:~$ sudo ls -ld /srv/sftp /srv/sftp/sftp_1005968285 /srv/sftp/sftp_1005968285/archivos; getent passwd sftp_1005968285; sudo tail -n 10 /etc/ssh/sshd_config
+drwxr-xr-x 3 root            root            4096 Oct  1 15:56 /srv/sftp
+drwxr-xr-x 3 root            root            4096 Oct  1 15:56 /srv/sftp/sftp_1005968285
+drwxr-xr-x 2 sftp_1005968285 sftp_1005968285 4096 Oct  1 15:56 /srv/sftp/sftp_1005968285/archivos
+sftp_1005968285:x:1002:1002::/archivos:/usr/sbin/nologin
+
+# --- Parcial 2: usuario exclusivo SFTP, enjaulado y sin shell ---
+Match User sftp_1005968285
+    ChrootDirectory /srv/sftp/%u
+    ForceCommand internal-sftp -l INFO
+    PasswordAuthentication yes
+    AllowTcpForwarding no
+    AllowAgentForwarding no
+    PermitTunnel no
+    X11Forwarding no
+
+vagrant@cliente-1005968285:~$ echo '### Shell SSH con el usuario SFTP (debe ser rechazada por ForceCommand internal-sftp)'; SSHPASS=Sftp.1005968285 sshpass -e ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2222 sftp_1005968285@192.168.56.10 id; echo rc=$?
+### Shell SSH con el usuario SFTP (debe ser rechazada por ForceCommand internal-sftp)
+Warning: Permanently added '[192.168.56.10]:2222' (ED25519) to the list of known hosts.
+This service allows sftp connections only.
+Connection to 192.168.56.10 closed.
+rc=1
+
+vagrant@cliente-1005968285:~$ echo '### El usuario SFTP esta enjaulado: la raiz que ve es su jaula y no existe etc'; SSHPASS=Sftp.1005968285 timeout 20 sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=6 -P 2222 -b /vagrant/scripts/sftp_jaula.txt sftp_1005968285@192.168.56.10
+### El usuario SFTP esta enjaulado: la raiz que ve es su jaula y no existe etc
+Warning: Permanently added '[192.168.56.10]:2222' (ED25519) to the list of known hosts.
+sftp> pwd
+Remote working directory: /archivos
+sftp> cd /
+sftp> ls -la
+drwxr-xr-x    3 root     root         4096 Oct  1 20:56 .
+drwxr-xr-x    3 root     root         4096 Oct  1 20:56 ..
+drwxr-xr-x    2 1002     1002         4096 Oct  1 20:56 archivos
+sftp> cd /etc
+stat remote: No such file or directory
+
+vagrant@srv2-1005968285:~$ sudo journalctl -u ssh --no-pager -n 40 | grep -E 'sftp_1005968285' | tail -6
+Oct 01 15:58:40 srv2-1005968285 sshd[4121]: pam_unix(sshd:session): session closed for user sftp_1005968285
+Oct 01 15:58:55 srv2-1005968285 sshd[4215]: Accepted password for sftp_1005968285 from 192.168.56.20 port 53986 ssh2
+Oct 01 15:58:55 srv2-1005968285 sshd[4215]: pam_unix(sshd:session): session opened for user sftp_1005968285(uid=1002) by (uid=0)
+Oct 01 15:58:57 srv2-1005968285 sshd[4256]: Accepted password for sftp_1005968285 from 192.168.56.20 port 53996 ssh2
+Oct 01 15:58:57 srv2-1005968285 sshd[4256]: pam_unix(sshd:session): session opened for user sftp_1005968285(uid=1002) by (uid=0)
+Oct 01 15:58:57 srv2-1005968285 sshd[4256]: pam_unix(sshd:session): session closed for user sftp_1005968285

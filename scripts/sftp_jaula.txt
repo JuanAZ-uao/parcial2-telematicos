@@ -1,0 +1,6 @@
+pwd
+cd /
+ls -la
+cd /etc
+ls
+bye

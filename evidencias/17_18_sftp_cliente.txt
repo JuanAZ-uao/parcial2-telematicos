@@ -1,0 +1,52 @@
+﻿
+
+vagrant@srv2-1005968285:~$ echo '--- Huella real de la clave de host en el Servidor 2:'; ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+--- Huella real de la clave de host en el Servidor 2:
+256 SHA256:CifvuKnCFUxaTaHjJPvXJRQcfQVeROGRu5rhIY1FQYs root@vagrant (ED25519)
+
+vagrant@cliente-1005968285:~$ bash /vagrant/scripts/50_cliente_sftp.sh
+################ 17) Huella de la clave de host en la primera conexion ################
+--- Huella publicada por el servidor (ssh-keyscan a traves del firewall):
+256 SHA256:CifvuKnCFUxaTaHjJPvXJRQcfQVeROGRu5rhIY1FQYs [192.168.56.10]:2222 (ED25519)
+--- Huella que muestra ssh al conectarse por primera vez (known_hosts vacio):
+debug1: Server host key: ssh-ed25519 SHA256:CifvuKnCFUxaTaHjJPvXJRQcfQVeROGRu5rhIY1FQYs
+Warning: Permanently added '[192.168.56.10]:2222' (ED25519) to the list of known hosts.
+Authenticated to 192.168.56.10 ([192.168.56.10]:2222) using "password".
+--- known_hosts despues de la primera conexion:
+256 SHA256:CifvuKnCFUxaTaHjJPvXJRQcfQVeROGRu5rhIY1FQYs |1|krpjfCajDmu+4JSuyRevFsyKiPs=|0IdS20xSKyHHrc2b20uESGdLspU= (ED25519)
+
+--- Sesion SFTP: ls, put y get (sftp -P 2222 sftp_1005968285@192.168.56.10)
+sftp> pwd
+Remote working directory: /archivos
+sftp> ls -l
+-rw-r--r--    1 1002     1002           40 Oct  1 20:56 leeme.txt
+sftp> put 1005968285_sftp.txt
+sftp> ls -l
+-rw-rw-r--    1 1002     1002           93 Oct  1 20:59 1005968285_sftp.txt
+-rw-r--r--    1 1002     1002           40 Oct  1 20:56 leeme.txt
+sftp> get 1005968285_sftp.txt descargado_sftp.txt
+sftp> bye
+--- Comparacion local del archivo subido y el descargado:
+IDENTICOS: Archivo SFTP del parcial - Juan Esteban Panesso 1005968285 - Thu Oct  1 03:59:19 PM -05 2026
+
+################ 18) Captura SFTP (tcp.port == 2222) ################
+Captura guardada: capturas/18_sftp_tcp2222.pcap (80 paquetes)
+--- Intercambio de versiones (Protocol: SSH-2.0) y mensajes de negociacion:
+4|192.168.56.20|53820|SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.13|Client: Protocol (SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.13)
+6|192.168.56.10|2222|SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.17|Server: Protocol (SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.17)
+8|192.168.56.20|53820||Client: Key Exchange Init
+9|192.168.56.10|2222||Server: Key Exchange Init
+10|192.168.56.20|53820||Client: Elliptic Curve Diffie-Hellman Key Exchange Init
+11|192.168.56.10|2222||Server: Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=316)
+12|192.168.56.20|53820||Client: New Keys
+--- Algoritmos ofrecidos por el cliente en KEXINIT (resumen):
+192.168.56.20	curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,sntrup761x25519-sha512@openssh.com,diffie-
+192.168.56.10	curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,sntrup761x25519-sha512@openssh.com,diffie-
+--- Paquetes cifrados despues de NEWKEYS (Encrypted packet):
+57
+--- Contrasena en claro en la captura: 0 coincidencias
+--- Contenido del archivo en claro en la captura: 0 coincidencias
+--- Conversaciones TCP (una sola conexion para autenticacion + comandos + datos):
+                                                           | Frames  Bytes | | Frames  Bytes | | Frames  Bytes |      Start     |              |
+192.168.56.20:53820        <-> 192.168.56.10:2222              40 7,798 bytes      40 6,242 bytes      80 14 kB         0.000000000         0.3627
+================================================================================

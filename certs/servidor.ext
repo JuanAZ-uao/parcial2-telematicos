@@ -1,0 +1,4 @@
+basicConstraints=CA:FALSE
+keyUsage=digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth
+subjectAltName=IP:192.168.56.10,DNS:srv2-1005968285

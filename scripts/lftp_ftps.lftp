@@ -1,0 +1,12 @@
+# Sesion FTPS explicita con lftp (equivalente a FileZilla "FTP explicito sobre TLS")
+#   lftp -f /vagrant/scripts/lftp_ftps.lftp
+set ftp:ssl-force true
+set ftp:ssl-protect-data true
+set ssl:ca-file /vagrant/certs/ca.crt
+set ftp:passive-mode true
+set ftp:prefer-epsv false
+open -u ftp_1005968285,Ftps.1005968285 192.168.56.10
+ls
+put 1005968285.txt
+get -e 1005968285.txt -o descargado_lftp.txt
+bye

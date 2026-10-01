@@ -1,0 +1,24 @@
+﻿
+vagrant@srv1-1005968285:~$ sudo bash /vagrant/scripts/10_srv1_ufw.sh
+Default incoming policy changed to 'deny'
+(be sure to update your rules accordingly)
+Default outgoing policy changed to 'allow'
+(be sure to update your rules accordingly)
+Default routed policy changed to 'deny'
+(be sure to update your rules accordingly)
+Rules updated
+Rules updated (v6)
+Rules updated
+Firewall is active and enabled on system startup
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+

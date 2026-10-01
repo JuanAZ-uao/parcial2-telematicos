@@ -1,0 +1,50 @@
+﻿
+
+vagrant@srv1-1005968285:~$ sudo iptables -t nat -L PREROUTING -n --line-numbers; sudo ufw status numbered
+Chain PREROUTING (policy ACCEPT)
+num  target     prot opt source               destination         
+1    DNAT       tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:21 to:192.168.50.2:21
+2    DNAT       tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpts:50000:50010 to:192.168.50.2
+3    DNAT       tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:2222 to:192.168.50.2:22
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+[ 2] 192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+[ 3] 192.168.50.2 21/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS control -> srv2
+[ 4] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+
+vagrant@cliente-1005968285:~$ echo '### SIN regla route hacia srv2:22 (solo existe el DNAT)'; echo ls | SSHPASS=Sftp.1005968285 timeout 20 sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=6 -P 2222 sftp_1005968285@192.168.56.10; echo rc=$?
+### SIN regla route hacia srv2:22 (solo existe el DNAT)
+ssh: connect to host 192.168.56.10 port 2222: Connection timed out
+Connection closed
+rc=255
+
+vagrant@srv1-1005968285:~$ sudo bash /vagrant/scripts/31_srv1_sftp_reenvio.sh permitir
+Rule added
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
+[ 2] 192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
+[ 3] 192.168.50.2 21/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS control -> srv2
+[ 4] 192.168.50.2 22/tcp on eth2 ALLOW FWD   Anywhere on eth1           # SFTP (2222 externo) -> srv2:22
+[ 5] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
+
+
+vagrant@cliente-1005968285:~$ echo '### CON regla route hacia srv2:22'; echo 'ls -l' | SSHPASS=Sftp.1005968285 timeout 20 sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=6 -P 2222 sftp_1005968285@192.168.56.10; echo rc=$?
+### CON regla route hacia srv2:22
+Warning: Permanently added '[192.168.56.10]:2222' (ED25519) to the list of known hosts.
+Connected to 192.168.56.10.
+sftp> ls -l
+-rw-r--r--    1 1002     1002           40 Oct  1 20:56 leeme.txt
+rc=0
+
+vagrant@cliente-1005968285:~$ echo '### El puerto 22 del Servidor 2 NO es accesible directamente desde el cliente'; nc -zv -w4 192.168.50.2 22 2>&1; echo '### Pero si a traves del Servidor 1 en el 2222'; nc -zv -w4 192.168.56.10 2222 2>&1
+### El puerto 22 del Servidor 2 NO es accesible directamente desde el cliente
+nc: connect to 192.168.50.2 port 22 (tcp) timed out: Operation now in progress
+### Pero si a traves del Servidor 1 en el 2222
+Connection to 192.168.56.10 2222 port [tcp/*] succeeded!

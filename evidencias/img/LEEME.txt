@@ -1,0 +1,1 @@
+﻿Coloca aqui las capturas de pantalla de FileZilla (punto 7) y de Wireshark.
