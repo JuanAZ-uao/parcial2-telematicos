@@ -16,7 +16,7 @@
 CODIGO = "1005968285"
 
 # Tarjeta del host a la que se puentea la public_network
-BRIDGE = ["Qualcomm Atheros QCA61x4A Wireless Network Adapter"]
+BRIDGE = ["Realtek PCIe GbE Family Controller"]
 
 Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-22.04"
