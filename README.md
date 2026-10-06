@@ -9,7 +9,7 @@ implementados con Vagrant + VirtualBox (Ubuntu 22.04, box `bento/ubuntu-22.04`).
 |---|---|
 | Juan Esteban Panesso | 1005968285 |
 | Sebastián Castillo Acevedo | 1109116367 |
-| Samuel Ríos | `<código>` |
+| Samuel Ríos | 1109663704 |
 
 > Los hostnames, el usuario FTP/SFTP y el archivo de prueba usan el código `1005968285`.
 
