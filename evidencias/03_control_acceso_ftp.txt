@@ -1,32 +1,399 @@
-﻿
-vagrant@srv1-1005968285:~$ sudo ufw status numbered
-Status: active
-
-     To                         Action      From
-     --                         ------      ----
-[ 1] 22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
-[ 2] 192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
-[ 3] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
-
-
-vagrant@cliente-1005968285:~$ echo '### SIN regla route del puerto 21'; curl -sS --connect-timeout 5 --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/; echo rc=$?
-### SIN regla route del puerto 21
-curl: (28) Connection timeout after 5006 ms
-rc=28
-
-vagrant@srv1-1005968285:~$ sudo bash /vagrant/scripts/11_srv1_permitir_ftp.sh
-Rule added
-Status: active
-
-     To                         Action      From
-     --                         ------      ----
-[ 1] 22/tcp                     ALLOW IN    Anywhere                   # Administracion SSH del Servidor 1
-[ 2] 192.168.50.2 50000:50010/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS datos (pasivo) -> srv2
-[ 3] 192.168.50.2 21/tcp on eth2 ALLOW FWD   Anywhere on eth1           # FTPS control -> srv2
-[ 4] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # Administracion SSH del Servidor 1
-
-
-vagrant@cliente-1005968285:~$ echo '### CON regla route del puerto 21'; curl -sS --connect-timeout 5 --ssl-reqd --cacert /vagrant/certs/ca.crt --user ftp_1005968285:Ftps.1005968285 ftp://192.168.56.10/; echo rc=$?
-### CON regla route del puerto 21
--rw-r--r--    1 1001     1001           50 Oct 01 15:50 bienvenida.txt
-rc=0
+=== SIN la regla del 21 (UFW no reenvia 21/tcp) ===
+NOTA: prueba hecha antes de agregar la regla; el DNAT esta activo pero el reenvio esta denegado.
+Tue Oct  6 02:05:01 AM -05 2026
+*   Trying 192.168.56.10:21...
+* Connected to 192.168.56.10 (192.168.56.10) port 21 (#0)
+< 220 (vsFTPd 3.0.5)
+> AUTH SSL
+< 234 Proceed with negotiation.
+*  CAfile: /vagrant/certs/ca.crt
+*  CApath: /etc/ssl/certs
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [88 bytes data]
+* TLSv1.2 (OUT), TLS header, Finished (20):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+* TLSv1.2 (IN), TLS header, Finished (20):
+{ [5 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [155 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [6 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Request CERT (13):
+{ [45 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [1335 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [264 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Certificate (11):
+} [8 bytes data]
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* Server certificate:
+*  subject: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=192.168.56.10
+*  start date: Oct  6 06:45:19 2026 GMT
+*  expire date: Jan  8 06:45:19 2029 GMT
+*  subjectAltName: host "192.168.56.10" matched cert's IP address!
+*  issuer: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=CA Telematicos 1005968285
+*  SSL certificate verify ok.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> USER ftp_1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [233 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [233 bytes data]
+* old SSL session ID is stale, removing
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 331 Please specify the password.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PASS Ftps.1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 230 Login successful.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PBSZ 0
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 200 PBSZ set to 0.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PROT P
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 200 PROT now Private.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PWD
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 257 "/" is the current directory
+* Entry path is '/'
+* Request has same path as previous transfer
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> EPSV
+* Connect data stream passively
+* ftp_perform ends with SECONDARY: 0
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 229 Entering Extended Passive Mode (|||50000|)
+*   Trying 192.168.56.10:50000...
+* Connecting to 192.168.56.10 (192.168.56.10) port 50000
+* Connected to 192.168.56.10 (192.168.56.10) port 21 (#0)
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> TYPE A
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 200 Switching to ASCII mode.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> LIST
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 150 Here comes the directory listing.
+* Maxdownload = -1
+* Doing the SSL/TLS handshake on the data stream
+*  CAfile: /vagrant/certs/ca.crt
+*  CApath: /etc/ssl/certs
+* SSL re-using session ID
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [559 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [88 bytes data]
+* TLSv1.2 (OUT), TLS header, Finished (20):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [592 bytes data]
+* TLSv1.2 (IN), TLS header, Finished (20):
+{ [5 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [161 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [6 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* Server certificate:
+*  subject: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=192.168.56.10
+*  start date: Oct  6 06:45:19 2026 GMT
+*  expire date: Jan  8 06:45:19 2029 GMT
+*  subjectAltName: host "192.168.56.10" matched cert's IP address!
+*  issuer: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=CA Telematicos 1005968285
+*  SSL certificate verify ok.
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [233 bytes data]
+* old SSL session ID is stale, removing
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS alert, close notify (256):
+{ [2 bytes data]
+* Remembering we are in dir ""
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS alert, close notify (256):
+} [2 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 226 Directory send OK.
+* Connection #0 to host 192.168.56.10 left intact
+-rw-r--r--    1 1001     1001           50 Oct 06 01:45 bienvenida.txt
+=== CON la regla del 21 (route allow 21/tcp hacia 192.168.50.2) ===
+Tue Oct  6 02:02:42 AM -05 2026
+*   Trying 192.168.56.10:21...
+* Connected to 192.168.56.10 (192.168.56.10) port 21 (#0)
+< 220 (vsFTPd 3.0.5)
+> AUTH SSL
+< 234 Proceed with negotiation.
+*  CAfile: /vagrant/certs/ca.crt
+*  CApath: /etc/ssl/certs
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [88 bytes data]
+* TLSv1.2 (OUT), TLS header, Finished (20):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+* TLSv1.2 (IN), TLS header, Finished (20):
+{ [5 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [155 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [6 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Request CERT (13):
+{ [45 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [1335 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [264 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Certificate (11):
+} [8 bytes data]
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* Server certificate:
+*  subject: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=192.168.56.10
+*  start date: Oct  6 06:45:19 2026 GMT
+*  expire date: Jan  8 06:45:19 2029 GMT
+*  subjectAltName: host "192.168.56.10" matched cert's IP address!
+*  issuer: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=CA Telematicos 1005968285
+*  SSL certificate verify ok.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> USER ftp_1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [233 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [233 bytes data]
+* old SSL session ID is stale, removing
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 331 Please specify the password.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PASS Ftps.1005968285
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 230 Login successful.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PBSZ 0
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 200 PBSZ set to 0.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PROT P
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 200 PROT now Private.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> PWD
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 257 "/" is the current directory
+* Entry path is '/'
+* Request has same path as previous transfer
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> EPSV
+* Connect data stream passively
+* ftp_perform ends with SECONDARY: 0
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 229 Entering Extended Passive Mode (|||50010|)
+*   Trying 192.168.56.10:50010...
+* Connecting to 192.168.56.10 (192.168.56.10) port 50010
+* Connected to 192.168.56.10 (192.168.56.10) port 21 (#0)
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> TYPE A
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 200 Switching to ASCII mode.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+> LIST
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 150 Here comes the directory listing.
+* Maxdownload = -1
+* Doing the SSL/TLS handshake on the data stream
+*  CAfile: /vagrant/certs/ca.crt
+*  CApath: /etc/ssl/certs
+* SSL re-using session ID
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [559 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [88 bytes data]
+* TLSv1.2 (OUT), TLS header, Finished (20):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [592 bytes data]
+* TLSv1.2 (IN), TLS header, Finished (20):
+{ [5 bytes data]
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [161 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [6 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* Server certificate:
+*  subject: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=192.168.56.10
+*  start date: Oct  6 06:45:19 2026 GMT
+*  expire date: Jan  8 06:45:19 2029 GMT
+*  subjectAltName: host "192.168.56.10" matched cert's IP address!
+*  issuer: C=CO; ST=Valle del Cauca; L=Cali; O=UAO; OU=Servicios Telematicos; CN=CA Telematicos 1005968285
+*  SSL certificate verify ok.
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [233 bytes data]
+* old SSL session ID is stale, removing
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS alert, close notify (256):
+{ [2 bytes data]
+* Remembering we are in dir ""
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS alert, close notify (256):
+} [2 bytes data]
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+{ [5 bytes data]
+< 226 Directory send OK.
+* Connection #0 to host 192.168.56.10 left intact
+-rw-r--r--    1 1001     1001           50 Oct 06 01:45 bienvenida.txt

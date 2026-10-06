@@ -20,4 +20,4 @@ CONF
 networkctl reload
 networkctl reconfigure "$IF"
 sleep 4
-echo "== $IF"; ip -br -4 addr show "$IF"; ip route | grep -c "default via 192.168.1.1" | sed 's/^/rutas por defecto via 192.168.1.1: /'
+echo "== $IF"; ip -br -4 addr show "$IF"; echo "rutas por defecto por $IF: $(ip route show default dev "$IF" | wc -l)"
