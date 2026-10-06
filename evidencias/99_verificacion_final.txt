@@ -1,0 +1,86 @@
+######## 2026-10-05 20:37:53  Verificacion del parcial con public_network ########
+
+== 0. Entorno y redes
+PASS  srv1 responde
+PASS  srv1: eth1 192.168.56.10 y eth2 192.168.50.3
+PASS  srv1: eth2 en la red interna 192.168.50.3
+PASS  srv1: public_network con IP de la LAN (eth3)
+PASS  cliente: public_network con IP de la LAN (eth2)
+PASS  srv2: solo red interna 192.168.50.2
+PASS  hostname srv1 con el codigo
+PASS  hostname srv2 con el codigo
+PASS  hostname cliente con el codigo
+
+== PRIMERA PARTE: FTPS + UFW
+PASS  P1  UFW activo con deny incoming / deny routed
+PASS  P1  reenvio IP habilitado
+PASS  P1  DNAT 21 y 50000:50010 en before.rules
+PASS  P1  el cliente NO tiene ruta hacia 192.168.50.0/24 (sale por NAT)
+PASS  P1  srv2:21 NO alcanzable desde el cliente
+PASS  P1  srv2:22 NO alcanzable desde el cliente
+PASS  P2  reglas UFW ALLOW: 22, 22(v6), route 21, route 50000:50010 (y nada mas)
+PASS  P2  no hay regla route hacia el 22 (SFTP) al inicio
+PASS  P2  puertos extra cerrados desde el cliente (80, 443, 3306)
+PASS  P3  quitar la regla route del 21
+PASS  P3  SIN la regla el FTPS falla (timeout)
+PASS  P3  agregar la regla route del 21
+PASS  P3  CON la regla el FTPS funciona
+PASS  P4  reglas NAT activas (iptables -t nat)
+PASS  P5  vsftpd activo y escuchando en el 21
+PASS  P5  TLS obligatorio y SSLv2/v3 deshabilitados
+PASS  P5  certificado firmado por la CA
+PASS  P5  login SIN TLS rechazado (530)
+PASS  P6  rango pasivo y pasv_address
+PASS  P7  subir/descargar por FTPS explicito (lftp)
+PASS  P7  archivo descargado identico al original
+PASS  P7  huella SHA-256 del certificado
+PASS?  Windows (anfitrion) -> FTPS 192.168.56.10, como FileZilla: OK
+PASS  P8  openssl s_client con CA: Verify return code 0
+PASS  P8  TLS 1.3 y suite AES-256-GCM-SHA384
+PASS  P8  sin la CA: Verify return code 21
+PASS  P9  TLS off en vsftpd
+PASS  P9  FTP plano lista el directorio (USER/PASS en claro)
+PASS  P9  TLS on en vsftpd (vuelve el FTPS)
+PASS  P9  capturas 09a y 09b existen
+
+== SEGUNDA PARTE: DNS sobre TLS (cliente)
+PASS  P10 resolved.conf: DNS con #nombre, FallbackDNS y DNSOverTLS=yes
+PASS  P10 /etc/resolv.conf apunta al stub 127.0.0.53
+PASS  P11 resolvectl status muestra +DNSOverTLS
+PASS  P11 ninguna interfaz trae DNS propios (la public_network no los filtra)
+PASS  P12 3 dominios resueltos por transporte cifrado
+PASS  P12 dig sin @ pasa por 127.0.0.53
+PASS  P12 dig @8.8.8.8 va directo por UDP/53 (sin DoT)
+  ... P13/P14: capturas 853 vs 53 y bloqueo del 853 (scripts/41_cliente_capturas_dot.sh)
+PASS  P13 DoT: Client Hello a 1.1.1.1:853 con SNI cloudflare-dns.com
+PASS  P13 DoT: 0 paquetes UDP/53 durante la captura
+PASS  P13 DoT: 0 consultas DNS legibles en la captura
+PASS  P13 sin DoT: consultas DNS visibles en claro (example.com)
+PASS  P14 puerto 853 bloqueado + yes: la resolucion falla
+PASS  P14 puerto 853 bloqueado + opportunistic: degrada y resuelve
+PASS  P14 estado final: DoT estricto (+DNSOverTLS)
+
+== TERCERA PARTE: SFTP + UFW
+PASS  P15 Match User con chroot e internal-sftp
+PASS  P16 DNAT 2222 -> 22 activo
+PASS  P16 SIN la regla route el SFTP falla
+PASS  P16 agregar la regla route del 22
+PASS  P16 CON la regla el SFTP funciona (ls)
+PASS  P15 shell SSH rechazada para el usuario SFTP
+PASS  P15 usuario enjaulado (cd /etc falla)
+PASS  P16 puerto 22 de srv2 NO alcanzable directamente
+PASS  P17 huella de la clave de host (ssh-keyscan por el 2222)
+PASS  P17/18 ls, put, get y captura tcp/2222
+PASS  P18 captura SFTP: 1 sola conexion TCP
+PASS  P18 captura SFTP: contrasena y contenido NO aparecen en claro
+PASS  Volver al estado inicial: quitar la regla route del 22
+
+== SEGURIDAD de la red publica (desde el anfitrion Windows)
+      192.168.1.36:21 desde la LAN real (debe estar cerrado): PASS (cerrado)
+      192.168.1.36:2222 desde la LAN real (debe estar cerrado): PASS (cerrado)
+      192.168.1.36:50000 desde la LAN real (debe estar cerrado): PASS (cerrado)
+PASS  SSH de srv1 solo por llave (la contrasena se rechaza)
+PASS  Estado final de srv1: UFW sin la regla SFTP
+
+######## RESULTADO: 71 pruebas OK, 0 fallidas ########
+FIN-VERIF

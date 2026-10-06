@@ -8,3 +8,6 @@ GUIA_SUSTENTACION.md
 # Claves privadas: NUNCA se suben al repositorio
 certs/*.key
 certs/*.srl
+
+# Guia de comandos personal (no se publica)
+COMANDOS_PARTE1.md

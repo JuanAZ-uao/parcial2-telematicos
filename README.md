@@ -42,6 +42,17 @@ los servidores es una *internal network* de VirtualBox, así que ni el cliente n
 tienen ruta hacia 192.168.50.0/24. El Servidor 2 tiene una ruta estática hacia 192.168.56.0/24
 por 192.168.50.3 (`config/srv2/60-ruta-cliente.yaml`) para que las respuestas vuelvan por el firewall.
 
+**`public_network` (red puenteada).** `srv1` y `cliente` tienen además un adaptador
+`public_network` del `Vagrantfile`, puenteado a la tarjeta de red del equipo anfitrión y con IP por
+DHCP de la LAN real (en las pruebas: `srv1` 192.168.1.36, `cliente` 192.168.1.37). Ese adaptador
+solo aporta la IP: [`scripts/01_red_publica.sh`](scripts/01_red_publica.sh) le quita la ruta por
+defecto y el DNS del router para no alterar la topología (el cliente sigue sin ruta hacia
+192.168.50.0/24 y el DoT usa solo los resolvers de `resolved.conf`). El DNAT es solo por `eth1`
+(`-i eth1`), así que el 21, el 50000:50010 y el 2222 **no** se publican hacia la LAN real. Como el
+Servidor 1 queda con IP en esa red, [`scripts/02_srv1_endurecer_ssh.sh`](scripts/02_srv1_endurecer_ssh.sh)
+deshabilita la autenticación por contraseña de su SSH (solo llaves). Si la tarjeta del anfitrión
+tiene otro nombre, se cambia en la variable `BRIDGE` del `Vagrantfile`.
+
 | Servicio publicado en 192.168.56.10 | Reenviado a | Regla |
 |---|---|---|
 | 22/tcp | — (SSH de administración del Servidor 1) | `ufw allow 22/tcp` |
